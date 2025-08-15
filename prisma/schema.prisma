@@ -1,0 +1,64 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url  	    = env("DATABASE_URL")
+
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  username  String   @unique
+  profile   Profile?
+
+  messagesSent Message[] @relation("MessagesSent")
+  messagesReceived Message[] @relation("MessagesReceived")
+
+  createdAt    DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime @updatedAt @db.Timestamptz(6)
+}
+
+model Profile {
+  id           Int    @id @default(autoincrement())
+  full_name    String?
+  profile_image String?
+  age           Int?
+  location      String?
+  userId       Int    @unique
+  user         User   @relation(fields: [userId], references: [id])
+
+  createdAt    DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime @updatedAt @db.Timestamptz(6)
+}
+
+
+model Message {
+  id          Int      @id @default(autoincrement())
+  content     String?
+  blobName    String? 
+  blobUrl     String?  
+  fileType    String? 
+  fileName    String?  
+  isPublic    Boolean  @default(false)
+
+  senderId    Int
+  sender      User     @relation("MessagesSent", fields: [senderId], references: [id])
+
+  recipientId Int?     
+  recipient   User?    @relation("MessagesReceived", fields: [recipientId], references: [id])
+
+  createdAt    DateTime @default(now()) @db.Timestamptz(6)
+  updatedAt    DateTime @updatedAt @db.Timestamptz(6)
+}
+
+
